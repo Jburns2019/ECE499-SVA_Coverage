@@ -77,6 +77,22 @@ initial begin
   if ($test$plusargs("SPEC18")) begin cgi_all_modules_doneable = new; end
   if ($test$plusargs("SPEC19")) begin cgi_cut_off_m2m3_after_2_cycle = new; end
   if ($test$plusargs("SPEC21")) begin cgi_nb_interrupts = new; end
+  if ($test$plusargs("ALLSPECS")) begin
+    cgi_M1_interrupts = new;
+    cgi_all_modules_requestable = new;
+    cgi_req_for_cycle = new;
+    cgi_req_M1_acted_on_edge = new;
+    cgi_req_M2_acted_on_edge = new;
+    cgi_req_M3_acted_on_edge = new;
+    cgi_M2_and_M3_no_it = new;
+    cgi_M2_M3_tie_breaker = new;
+    cgi_smooth_trasitions = new;
+    cgi_modules_finish_access = new;
+    cgi_invalid_access = new;
+    cgi_all_modules_doneable = new;
+    cgi_cut_off_m2m3_after_2_cycle = new;
+    cgi_nb_interrupts = new;
+  end
 
   clk = 0;
 
