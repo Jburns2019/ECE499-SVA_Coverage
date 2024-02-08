@@ -12,3 +12,5 @@ vlog controller_wrong.sv tb.sv covergroups.sv +fcover -cover sbcef +cover=f -O0
 
 #Simulate states.
 vsim tb -c -coverage -do cover.do +ALLSPECS
+
+#sh fpv.sh
