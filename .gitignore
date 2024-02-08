@@ -5,3 +5,4 @@ transcript
 *.ucdb
 work/*
 covhtmlreport/*
+log/*
