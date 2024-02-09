@@ -43,14 +43,26 @@ module controller(
 
   `ifdef FORMAL
   `include "properties.sv"
-  a_reset: assert property(p_reset);
-  a_req_M1: assume property(p_req_M1);
-  a_req_M2: assume property(p_req_M2);
-  a_req_M3: assume property(p_req_M3);
-  a_done_M1: assume property(p_done_M1);
-  a_done_M2: assume property(p_done_M2);
-  a_done_M3: assume property(p_done_M3);
+
+  // a_reset: assert property(p_reset);
+  // a_req_M1: assume property(p_req_M1);
+  // a_req_M2: assume property(p_req_M2);
+  // a_req_M3: assume property(p_req_M3);
+  // a_done_M1: assume property(p_done_M1);
+  // a_done_M2: assume property(p_done_M2);
+  // a_done_M3: assume property(p_done_M3);
+
+
+  // assume_not_IDLE: assume property(@(posedge clk) disable iff(!reset) accmodule inside {2'b01, 2'b10, 2'b11}) ;
+  // a_reset: assert property(p_reset) $display("~ ~ ~ ~ ASSERTION accmodule: %b", accmodule);
+
+  // Spec. 16
+  // a_req_done_M1: assert property(p_req_and_done_M1) else $error("M1 done and req are asserted at the same time!");
+
+
   `endif
+
+  // assert (done[M1]&&req[M1]) else $error("M1 done and req are asserted at the same time!");
 
   // Reset, including returning to IDLE state, otherwise update state
   always_ff @(posedge clk, posedge reset) begin
@@ -69,6 +81,10 @@ module controller(
 
   // Next state and output logic
   always_comb begin
+    assert (done=='0||req=='0) else $error("M1 done and req are asserted at the same time!");
+    // assert (~(done[M1]&&req[M1])) else $error("M1 done and req are asserted at the same time!");
+    // assert (~(done[M2]&&req[M2])) else $error("M2 done and req are asserted at the same time!");
+    // assert (~(done[M3]&&req[M3])) else $error("M3 done and req are asserted at the same time!");
     // Set outputs to initial values
     mstate 		= 0;
     accmodule 	= 2'b00;
