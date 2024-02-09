@@ -41,6 +41,14 @@ module controller(
     M3sd_3p = 17
   } index;
 
+  `ifdef FORMAL
+  `include "properties.sv"
+  a_reset: assert property(p_reset);
+  assume property(p_req_M1);
+  assume property(p_req_M2);
+  assume property(p_req_M3);
+  `endif
+
   // Reset, including returning to IDLE state, otherwise update state
   always_ff @(posedge clk, posedge reset) begin
     if(reset) begin

@@ -44,10 +44,16 @@ module controller(
   `ifdef FORMAL
   `include "properties.sv"
   a_reset: assert property(p_reset);
+  a_req_M1: assume property(p_req_M1);
+  a_req_M2: assume property(p_req_M2);
+  a_req_M3: assume property(p_req_M3);
+  a_done_M1: assume property(p_done_M1);
+  a_done_M2: assume property(p_done_M2);
+  a_done_M3: assume property(p_done_M3);
   `endif
 
   // Reset, including returning to IDLE state, otherwise update state
-  always_ff @(posedge clk) begin
+  always_ff @(posedge clk, posedge reset) begin
     if(reset) begin
       ps          <= '0;      
       ps[IDLE_2p] <= 1'b0; //arbitrary: M2 has priority at next contention      

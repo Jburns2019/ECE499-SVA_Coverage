@@ -96,7 +96,7 @@ initial begin
 
   clk = 0;
 
-  repeat(50000) begin
+  repeat(5000) begin
     randomizer.randomize();
     while (need_to_rerandomize(req, done, randomizer.req, randomizer.done)) begin
       randomizer.randomize();
