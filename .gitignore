@@ -10,3 +10,5 @@ propcheck.db
 gcd-formal
 qcache
 qverify_ui_cmds.tcl
+.qverify
+.visualizer

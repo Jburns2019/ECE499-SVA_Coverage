@@ -1,7 +1,7 @@
 `ifdef FORMAL
 
 property p_reset;
-    @(posedge reset) accmodule == 0;
+    @(posedge reset) $fell(accmodule);
 endproperty
 
 `endif
