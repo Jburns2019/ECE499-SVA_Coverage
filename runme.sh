@@ -12,4 +12,4 @@ vlog +define+ASSERTIONS controller_wrong.sv tb.sv covergroups.sv +fcover -cover 
 #Simulate states.
 vsim tb -c -coverage -do cover.do +ALLSPECS
 
-#sh fpv.sh
+sh fpv.sh

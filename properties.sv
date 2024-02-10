@@ -46,6 +46,25 @@ property p_module_granted_M3_access_before_on_posedge;
         |-> ##0 accmodule != 2'b11;
 endproperty
 
+property p_module_granted_M1_access_on_posedge;
+    @(posedge clk)
+        disable iff(reset)
+        req[M1]
+        |=> accmodule == 2'b01;
+endproperty
+property p_module_granted_M2_access_on_posedge;
+    @(posedge clk)
+        disable iff(reset)
+        !accmodule && req[M2] && !req[M1] && !req[M3]
+        |=> accmodule == 2'b10;
+endproperty
+property p_module_granted_M3_access_on_posedge;
+    @(posedge clk)
+        disable iff(reset)
+        !accmodule && req[M3] && !req[M1] && !req[M2]
+        |=> accmodule == 2'b11;
+endproperty
+
 //Spec. 13
 property p_M2_2_cycle_access;
     @(posedge clk)
@@ -85,13 +104,6 @@ endproperty
 
 //Trial assertions to get a feel for more complex assertions.
 //  Additionally they are the basis for some larger assertions, so they give a little more information.
-property p_M1_in_access;
-    @(posedge clk)
-        disable iff(reset)
-        req[M1]
-        |=> accmodule == 2'b01;
-endproperty
-
 property p_M1_it_access;
     @(posedge clk)
         disable iff(reset)
