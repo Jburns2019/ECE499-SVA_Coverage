@@ -1,8 +1,8 @@
 # Compile Section
 
 vlib work
-vlog -sv +define+FORMAL controller.sv
-vlog -sv -mfcu -cuname sva_bind +define+FORMAL properties.sv
+vlog -sv +define+FORMAL +define+ASSERTIONS controller.sv
+vlog -sv -mfcu -cuname sva_bind +define+ASSERTIONS properties.sv
 
 # PropCheck Section
 onerror {exit 1}
