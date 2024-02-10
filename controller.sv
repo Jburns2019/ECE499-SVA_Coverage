@@ -43,13 +43,17 @@ module controller(
 
   `ifdef ASSERTIONS
   `include "properties.sv"
-  a_reset: assert property(p_reset) else $error("Reset did not change accmodule.");
   a_M1_in_access: assert property(p_M1_in_access) else $error("M1 did not get access when it requested.");
   a_M1_it_access: assert property(p_M1_it_access) else $error("M1 did not interrupt M2 or M3.");
+
+  a_reset: assert property(p_reset) else $error("Reset did not change accmodule.");
   a_M1_id_access: assert property(p_M1_id_access) else $error("M1 did not get indefinite access.");
+  a_M1_it_2_cycle_access: assert property(p_M1_it_2_cycle_access) else $error("Interrupting M1 did not get its access reduced.");
+  a_module_granted_M1_access_before_on_posedge: assert property(p_module_granted_M1_access_before_on_posedge) else $error("M1 got access before the clock edge.");
+  a_module_granted_M2_access_before_on_posedge: assert property(p_module_granted_M2_access_before_on_posedge) else $error("M2 got access before the clock edge.");
+  a_module_granted_M3_access_before_on_posedge: assert property(p_module_granted_M3_access_before_on_posedge) else $error("M3 got access before the clock edge.");
   a_M2_2_cycle_access: assert property(p_M2_2_cycle_access) else $error("M2 did not get 2 cycles of access when it should have.");
   a_M3_2_cycle_access: assert property(p_M3_2_cycle_access) else $error("M3 did not get 2 cycles of access when it should have.");
-  a_M1_it_2_cycle_access: assert property(p_M1_it_2_cycle_access) else $error("Interrupting M1 did not get its access reduced.");
 
   `ifdef FORMAL
   a_req_M1: assume property(p_req_M1);
