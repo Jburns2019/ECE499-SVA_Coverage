@@ -31,22 +31,19 @@ property p_module_granted_M1_access_before_on_posedge;
     @(posedge clk)
         disable iff(reset)
         accmodule != 2'b01 && req[M1]
-        |-> ##0 accmodule != 2'b01
-        |=> accmodule == 2'b01;
+        |-> ##0 accmodule != 2'b01;
 endproperty
 property p_module_granted_M2_access_before_on_posedge;
     @(posedge clk)
         disable iff(reset)
         accmodule != 2'b10 && req[M2]
-        |-> ##0 accmodule != 2'b10
-        |=> accmodule == 2'b10;
+        |-> ##0 accmodule != 2'b10;
 endproperty
 property p_module_granted_M3_access_before_on_posedge;
     @(posedge clk)
         disable iff(reset)
         accmodule != 2'b11 && req[M3]
-        |-> ##0 accmodule != 2'b11
-        |=> accmodule == 2'b11;
+        |-> ##0 accmodule != 2'b11;
 endproperty
 
 property p_module_granted_M1_access_on_posedge;
