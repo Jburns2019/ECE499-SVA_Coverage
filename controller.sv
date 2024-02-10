@@ -41,12 +41,27 @@ module controller(
     M3sd_3p = 17
   } index;
 
-  `ifdef FORMAL
+  `ifdef ASSERTIONS
   `include "properties.sv"
-  a_reset: assert property(p_reset);
-  assume property(p_req_M1);
-  assume property(p_req_M2);
-  assume property(p_req_M3);
+  a_reset: assert property(p_reset) else $error("Reset did not change accmodule.");
+  a_M1_in_access: assert property(p_M1_in_access) else $error("M1 did not get access when it requested.");
+  a_M1_it_access: assert property(p_M1_it_access) else $error("M1 did not interrupt M2 or M3.");
+  a_M1_id_access: assert property(p_M1_id_access) else $error("M1 did not get indefinite access.");
+  a_M2_2_cycle_access: assert property(p_M2_2_cycle_access) else $error("M2 did not get 2 cycles of access when it should have.");
+  a_M3_2_cycle_access: assert property(p_M3_2_cycle_access) else $error("M3 did not get 2 cycles of access when it should have.");
+  a_M1_it_2_cycle_access: assert property(p_M1_it_2_cycle_access) else $error("Interrupting M1 did not get its access reduced.");
+
+  `ifdef FORMAL
+  a_req_M1: assume property(p_req_M1);
+  a_req_M2: assume property(p_req_M2);
+  a_req_M3: assume property(p_req_M3);
+  a_done_M1: assume property(p_done_M1);
+  a_done_M2: assume property(p_done_M2);
+  a_done_M3: assume property(p_done_M3);
+  a_no_req_and_done_M1: assume property(p_no_req_and_done_M1);
+  a_no_req_and_done_M2: assume property(p_no_req_and_done_M2);
+  a_no_req_and_done_M3: assume property(p_no_req_and_done_M3);
+  `endif
   `endif
 
   // Reset, including returning to IDLE state, otherwise update state
@@ -59,9 +74,10 @@ module controller(
   end
   
   //When entering an interrupting state, increase the interruptions count
-  always_ff @(posedge reset, posedge ps[M1it_2p], posedge ps[M1it_3p]) begin
-    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
-  end
+  //always_ff @(posedge reset) begin
+  //  if (reset || ps[M1it_2p] || ps[M1it_3p])
+  //    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
+  //end
   
   // Next state and output logic
   always_comb begin
@@ -102,6 +118,7 @@ module controller(
         else begin
           if(req[M1]) begin
                     ns[M1it_2p] = 1'b1;
+                    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
           end
           else      ns[M2sd_2p] = 1'b1;
         end
@@ -120,6 +137,7 @@ module controller(
         else begin  
           if(req[M1]) begin
                     ns[M1it_2p] = 1'b1;
+                    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
           end        
           else      ns[M3sd_2p] = 1'b1;
         end
@@ -224,6 +242,7 @@ module controller(
         else begin
           if(req[M1]) begin 
                     ns[M1it_3p] = 1'b1;
+                    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
           end
           else      ns[M2sd_3p] = 1'b1;
         end
@@ -242,6 +261,7 @@ module controller(
         else begin
           if(req[M1]) begin
                     ns[M1it_3p] = 1'b1;
+                    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
           end
           else      ns[M3sd_3p] = 1'b1;
         end
