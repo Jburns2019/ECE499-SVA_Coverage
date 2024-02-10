@@ -28,16 +28,29 @@ property p_done_M3;
     @(posedge clk) done[2] |=> !done[2];
 endproperty
 
-property p_req_and_done_M1;
-    @(posedge clk) done[M1] && req[M1];
+// spec. 12
+property p_M2_M3_oscilating_tie_breaker;
+    @(posedge clk) (req == 3'b110 && accmodule == 2'b10) |-> ##[1:$] (req == 3'b110 && accmodule == 2'b11)
 endproperty
 
-property p_req_and_done_M2;
-    @(posedge clk) done[M2] && req[M2];
+// spec. 13
+property p_atmost_2_cycles_M2;
+    // @(posedge clk) accmodule == 2'b10 |=> accmodule == 2'b10 |=> accmodule != 2'b10;
+    @(posedge clk) req[M2] |=> $rose(req[M2]) |=> $stable(req[M2]) |=> $fell(req[M2]);
+endproperty
+property p_atmost_2_cycles_M3;
+    @(posedge clk) req[M3] |=> $rose(req[M3]) |=> $stable(req[M3]) |=> $fell(req[M3]);
 endproperty
 
-property p_req_and_done_M3;
-    @(posedge clk) done[M3] && req[M3];
+// spec. 16
+property p_req_done_opposite_M1;
+    @(posedge clk) (req[M1] && done[M1]) == 0;
+endproperty
+property p_req_done_opposite_M2;
+    @(posedge clk) (req[M2] && done[M2]) == 0;
+endproperty
+property p_req_done_opposite_M3;
+    @(posedge clk) (req[M3] && done[M3]) == 0;
 endproperty
 
 `endif
