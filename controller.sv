@@ -43,7 +43,7 @@ module controller(
 
   `ifdef ASSERTIONS
   `include "properties.sv"
-  // a_M1_it_access: assert property(p_M1_it_access) else $error("M1 did not interrupt M2 or M3.");
+  a_M1_it_access: assert property(p_M1_it_access) else $error("M1 did not interrupt M2 or M3.");
 
   a_reset: assert property(p_reset) else $error("Reset did not change accmodule.");
   a_M1_id_access: assert property(p_M1_id_access) else $error("M1 did not get indefinite access.");
