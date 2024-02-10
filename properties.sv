@@ -31,19 +31,22 @@ property p_module_granted_M1_access_before_on_posedge;
     @(posedge clk)
         disable iff(reset)
         accmodule != 2'b01 && req[M1]
-        |-> ##0 accmodule != 2'b01;
+        |-> ##0 accmodule != 2'b01
+        |=> accmodule == 2'b01;
 endproperty
 property p_module_granted_M2_access_before_on_posedge;
     @(posedge clk)
         disable iff(reset)
         accmodule != 2'b10 && req[M2]
-        |-> ##0 accmodule != 2'b10;
+        |-> ##0 accmodule != 2'b10
+        |=> accmodule == 2'b10;
 endproperty
 property p_module_granted_M3_access_before_on_posedge;
     @(posedge clk)
         disable iff(reset)
         accmodule != 2'b11 && req[M3]
-        |-> ##0 accmodule != 2'b11;
+        |-> ##0 accmodule != 2'b11
+        |=> accmodule == 2'b11;
 endproperty
 
 property p_module_granted_M1_access_on_posedge;
@@ -83,6 +86,56 @@ property p_M3_2_cycle_access;
         |=> accmodule == 2'b11 && !done[M3] && !req[M1]
         |=> accmodule == 2'b11 && !req[M3]
         |=> accmodule != 2'b11;
+endproperty
+
+//Spec. 14
+property p_M1_smooth_transition_M2;
+    @(posedge clk)
+        disable iff(reset)
+        req[M1]
+        |=> accmodule == 2'b01 && !done && !req[M1]
+        |=> accmodule == 2'b01 && done[M1] && !req[M1] && !req[M3] && req[M2]
+        |=> accmodule == 2'b10;
+endproperty
+property p_M1_smooth_transition_M3;
+    @(posedge clk)
+        disable iff(reset)
+        req[M1]
+        |=> accmodule == 2'b01 && !done && !req[M1]
+        |=> accmodule == 2'b01 && done[M1] && !req[M1] && !req[M2] && req[M3]
+        |=> accmodule == 2'b11;
+endproperty
+property p_M2_smooth_transition_M1;
+    @(posedge clk)
+        disable iff(reset)
+        req[M2]
+        |=> accmodule == 2'b10 && !done && !req[M2]
+        |=> accmodule == 2'b10 && done[M2] && !req[M2] && !req[M3] && req[M1]
+        |=> accmodule == 2'b01;
+endproperty
+property p_M2_smooth_transition_M3;
+    @(posedge clk)
+        disable iff(reset)
+        req[M2]
+        |=> accmodule == 2'b10 && !done && !req[M2]
+        |=> accmodule == 2'b10 && done[M2] && !req[M2] && !req[M1] && req[M3]
+        |=> accmodule == 2'b11;
+endproperty
+property p_M3_smooth_transition_M1;
+    @(posedge clk)
+        disable iff(reset)
+        req[M3]
+        |=> accmodule == 2'b11 && !done && !req[M3]
+        |=> accmodule == 2'b11 && done[M3] && !req[M3] && !req[M2] && req[M1]
+        |=> accmodule == 2'b01;
+endproperty
+property p_M3_smooth_transition_M2;
+    @(posedge clk)
+        disable iff(reset)
+        req[M3]
+        |=> accmodule == 2'b11 && !done && !req[M3]
+        |=> accmodule == 2'b11 && done[M3] && !req[M3] && !req[M1] && req[M2]
+        |=> accmodule == 2'b10;
 endproperty
 
 //Spec. 16

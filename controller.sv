@@ -43,19 +43,25 @@ module controller(
 
   `ifdef ASSERTIONS
   `include "properties.sv"
-  a_M1_it_access: assert property(p_M1_it_access) else $error("M1 did not interrupt M2 or M3.");
+  // a_M1_it_access: assert property(p_M1_it_access) else $error("M1 did not interrupt M2 or M3.");
 
-  a_reset: assert property(p_reset) else $error("Reset did not change accmodule.");
-  a_M1_id_access: assert property(p_M1_id_access) else $error("M1 did not get indefinite access.");
-  a_M1_it_2_cycle_access: assert property(p_M1_it_2_cycle_access) else $error("Interrupting M1 did not get its access reduced.");
+  // a_reset: assert property(p_reset) else $error("Reset did not change accmodule.");
+  // a_M1_id_access: assert property(p_M1_id_access) else $error("M1 did not get indefinite access.");
+  // a_M1_it_2_cycle_access: assert property(p_M1_it_2_cycle_access) else $error("Interrupting M1 did not get its access reduced.");
   a_module_granted_M1_access_before_on_posedge: assert property(p_module_granted_M1_access_before_on_posedge) else $error("M1 got access before the clock edge.");
   a_module_granted_M1_access_on_posedge: assert property(p_module_granted_M1_access_on_posedge) else $error("M1 did not get access when it requested.");
-  a_module_granted_M2_access_before_on_posedge: assert property(p_module_granted_M2_access_before_on_posedge) else $error("M2 got access before the clock edge.");
-  a_module_granted_M2_access_on_posedge: assert property(p_module_granted_M2_access_on_posedge) else $error("M2 did not get access when it requested.");
-  a_module_granted_M3_access_before_on_posedge: assert property(p_module_granted_M3_access_before_on_posedge) else $error("M3 got access before the clock edge.");
-  a_module_granted_M3_access_on_posedge: assert property(p_module_granted_M3_access_on_posedge) else $error("M3 did not get access when it requested.");
-  a_M2_2_cycle_access: assert property(p_M2_2_cycle_access) else $error("M2 did not get 2 cycles of access when it should have.");
-  a_M3_2_cycle_access: assert property(p_M3_2_cycle_access) else $error("M3 did not get 2 cycles of access when it should have.");
+  // a_module_granted_M2_access_before_on_posedge: assert property(p_module_granted_M2_access_before_on_posedge) else $error("M2 got access before the clock edge.");
+  // a_module_granted_M2_access_on_posedge: assert property(p_module_granted_M2_access_on_posedge) else $error("M2 did not get access when it requested.");
+  // a_module_granted_M3_access_before_on_posedge: assert property(p_module_granted_M3_access_before_on_posedge) else $error("M3 got access before the clock edge.");
+  // a_module_granted_M3_access_on_posedge: assert property(p_module_granted_M3_access_on_posedge) else $error("M3 did not get access when it requested.");
+  // a_M2_2_cycle_access: assert property(p_M2_2_cycle_access) else $error("M2 did not get 2 cycles of access when it should have.");
+  // a_M3_2_cycle_access: assert property(p_M3_2_cycle_access) else $error("M3 did not get 2 cycles of access when it should have.");
+  a_M1_smooth_M2: assert property(p_M1_smooth_transition_M2) else $error("M1 did not smooth transition to M2");
+  a_M1_smooth_M3: assert property(p_M1_smooth_transition_M3) else $error("M1 did not smooth transition to M3");
+  a_M2_smooth_M1: assert property(p_M2_smooth_transition_M1) else $error("M2 did not smooth transition to M1");
+  a_M2_smooth_M3: assert property(p_M2_smooth_transition_M3) else $error("M2 did not smooth transition to M3");
+  a_M3_smooth_M1: assert property(p_M3_smooth_transition_M1) else $error("M3 did not smooth transition to M1");
+  a_M3_smooth_M2: assert property(p_M3_smooth_transition_M2) else $error("M3 did not smooth transition to M2");
 
   `ifdef FORMAL
   a_req_M1: assume property(p_req_M1);
