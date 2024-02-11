@@ -1,3 +1,5 @@
+`include "properties.sv"
+
 // Code your design here
 module controller(
   input clk,
@@ -40,41 +42,8 @@ module controller(
     M3sd_2p = 16, // M3 using memory second cycle
     M3sd_3p = 17
   } index;
-
-  `ifdef ASSERTIONS
-  `include "properties.sv"
-  a_M1_it_access: assert property(p_M1_it_access) else $error("M1 did not interrupt M2 or M3.");
-
-  a_reset: assert property(p_reset) else $error("Reset did not change accmodule.");
-  a_M1_id_access: assert property(p_M1_id_access) else $error("M1 did not get indefinite access.");
-  a_M1_it_2_cycle_access: assert property(p_M1_it_2_cycle_access) else $error("Interrupting M1 did not get its access reduced.");
-  a_module_granted_M1_access_before_on_posedge: assert property(p_module_granted_M1_access_before_on_posedge) else $error("M1 got access before the clock edge.");
-  a_module_granted_M1_access_on_posedge: assert property(p_module_granted_M1_access_on_posedge) else $error("M1 did not get access when it requested.");
-  a_module_granted_M2_access_before_on_posedge: assert property(p_module_granted_M2_access_before_on_posedge) else $error("M2 got access before the clock edge.");
-  a_module_granted_M2_access_on_posedge: assert property(p_module_granted_M2_access_on_posedge) else $error("M2 did not get access when it requested.");
-  a_module_granted_M3_access_before_on_posedge: assert property(p_module_granted_M3_access_before_on_posedge) else $error("M3 got access before the clock edge.");
-  a_module_granted_M3_access_on_posedge: assert property(p_module_granted_M3_access_on_posedge) else $error("M3 did not get access when it requested.");
-  a_M2_2_cycle_access: assert property(p_M2_2_cycle_access) else $error("M2 did not get 2 cycles of access when it should have.");
-  a_M3_2_cycle_access: assert property(p_M3_2_cycle_access) else $error("M3 did not get 2 cycles of access when it should have.");
-  a_M1_smooth_M2: assert property(p_M1_smooth_transition_M2) else $error("M1 did not smooth transition to M2");
-  a_M1_smooth_M3: assert property(p_M1_smooth_transition_M3) else $error("M1 did not smooth transition to M3");
-  a_M2_smooth_M1: assert property(p_M2_smooth_transition_M1) else $error("M2 did not smooth transition to M1");
-  a_M2_smooth_M3: assert property(p_M2_smooth_transition_M3) else $error("M2 did not smooth transition to M3");
-  a_M3_smooth_M1: assert property(p_M3_smooth_transition_M1) else $error("M3 did not smooth transition to M1");
-  a_M3_smooth_M2: assert property(p_M3_smooth_transition_M2) else $error("M3 did not smooth transition to M2");
-
-  `ifdef FORMAL
-  a_req_M1: assume property(p_req_M1);
-  a_req_M2: assume property(p_req_M2);
-  a_req_M3: assume property(p_req_M3);
-  a_done_M1: assume property(p_done_M1);
-  a_done_M2: assume property(p_done_M2);
-  a_done_M3: assume property(p_done_M3);
-  a_no_req_and_done_M1: assume property(p_no_req_and_done_M1);
-  a_no_req_and_done_M2: assume property(p_no_req_and_done_M2);
-  a_no_req_and_done_M3: assume property(p_no_req_and_done_M3);
-  `endif
-  `endif
+  
+  bind controller properties prop_iDUT(.*);
 
   // Reset, including returning to IDLE state, otherwise update state
   always_ff @(posedge clk, posedge reset) begin
@@ -130,7 +99,7 @@ module controller(
         else begin
           if(req[M1]) begin
                     ns[M1it_2p] = 1'b1;
-                    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
+                    nb_interrupts = (reset) ? 0 : nb_interrupts+1;
           end
           else      ns[M2sd_2p] = 1'b1;
         end
@@ -149,7 +118,7 @@ module controller(
         else begin  
           if(req[M1]) begin
                     ns[M1it_2p] = 1'b1;
-                    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
+                    nb_interrupts = (reset) ? 0 : nb_interrupts+1;
           end        
           else      ns[M3sd_2p] = 1'b1;
         end
@@ -173,12 +142,11 @@ module controller(
       
       ps[M1id_2p]: begin
         if(done[M1]) begin
-          unique casez(req)
-            3'b??1: ns[M1in_2p] = 1'b1;
+          casez(req)
             3'b010: ns[M2in_2p] = 1'b1;
             3'b110: ns[M2in_3p] = 1'b1;
             3'b100: ns[M3in_2p] = 1'b1;
-            3'b000: ns[IDLE_2p] = 1'b1;
+            default: ns[IDLE_2p] = 1'b1;
           endcase
         end
         else        ns[M1id_2p] = 1'b1;
@@ -254,7 +222,7 @@ module controller(
         else begin
           if(req[M1]) begin 
                     ns[M1it_3p] = 1'b1;
-                    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
+                    nb_interrupts = (reset) ? 0 : nb_interrupts+1;
           end
           else      ns[M2sd_3p] = 1'b1;
         end
@@ -273,7 +241,7 @@ module controller(
         else begin
           if(req[M1]) begin
                     ns[M1it_3p] = 1'b1;
-                    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
+                    nb_interrupts = (reset) ? 0 : nb_interrupts+1;
           end
           else      ns[M3sd_3p] = 1'b1;
         end
@@ -297,12 +265,11 @@ module controller(
       
       ps[M1id_3p]: begin
         if(done[M1]) begin
-          unique casez(req)
-            3'b??1: ns[M1in_3p] = 1'b1;
+          casez(req)
             3'b010: ns[M2in_3p] = 1'b1;
             3'b110: ns[M3in_2p] = 1'b1;
             3'b100: ns[M3in_3p] = 1'b1;
-            3'b000: ns[IDLE_3p] = 1'b1;
+            default: ns[IDLE_3p] = 1'b1;
           endcase
         end
         else        ns[M1id_3p] = 1'b1;

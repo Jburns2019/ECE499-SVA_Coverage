@@ -23,6 +23,7 @@ module tb();
 
   logic req_was_M1, req_was_M2, req_was_M3, req_needs_to_change;
   logic done_all_zero, done_has_not_changed, done_needs_to_change;
+  logic req_and_dones;
 
 class Random_Class;
   rand bit [2:0] req;
@@ -30,12 +31,13 @@ class Random_Class;
   rand bit [2:0] reset;
 
   constraint is_one_hot {done[0] ^ done[1] ^ done[2] && done != 3'b111;}
+  constraint not_both {!(req[M1] && done[M1] || req[M2] && done[M2] || req[M3] && done[M3]);}
 endclass
 
 Random_Class randomizer = new;
 
 function need_to_rerandomize(logic [2:0] req, logic [2:0] done, logic [2:0] req_curr, logic [2:0] done_curr);
-  req_was_M1 = req[0] == req_curr[0] && req[0];
+  req_was_M1 = req[M1] == req_curr[M1] && req[M1];
   req_was_M2 = req[1] == req_curr[1] && req[1];
   req_was_M3 = req[2] == req_curr[2] && req[2];
   req_needs_to_change = req_was_M1 || req_was_M2 || req_was_M3;
@@ -44,7 +46,9 @@ function need_to_rerandomize(logic [2:0] req, logic [2:0] done, logic [2:0] req_
   done_has_not_changed = done == done_curr;
   done_needs_to_change = done_all_zero && done_has_not_changed;
 
-  return req_needs_to_change || done_needs_to_change;
+  req_and_dones = req[M1] && done[M1] || req[M2] && done[M2] || req[M3] && done[M3];
+
+  return req_needs_to_change || done_needs_to_change || req_and_dones;
 endfunction
 
 cg_M1_interrupts cgi_M1_interrupts;
@@ -96,7 +100,8 @@ initial begin
 
   clk = 0;
 
-  repeat(5000) begin
+  randomizer.srandom(1234);
+  repeat(50000) begin
     randomizer.randomize();
     while (need_to_rerandomize(req, done, randomizer.req, randomizer.done)) begin
       randomizer.randomize();
@@ -108,29 +113,10 @@ initial begin
     #PERIOD;
   end
 
-  reset_inputs();
+  req = '0;
+  done = '0;
 
-  access_M1in_2p();
-  req = 1 << M1;
-  #PERIOD reset_inputs();
-  #(3*PERIOD);
-  assess_state("Long M1 requested while in M1", 2'b01, accmodule);
-
-  access_M1id_2p();
-  #(3*PERIOD);
-  assess_state("long M1 accessed from idle", 2'b01, accmodule);
-
-  access_M1it_2p();
-  #(3*PERIOD);
-  assess_state("long M1 interrupts M2", 2'b00, accmodule);
-
-  access_M3in_2p();
-  req = 1 << M1;
-  #PERIOD reset_inputs();
-  #(3*PERIOD);
-  assess_state("long M1 interrupts M3", 2'b00, accmodule);
-
-  # 20 $dumpflush;
+  #PERIOD $dumpflush;
   $stop;
 end
 
@@ -138,64 +124,4 @@ initial begin
   $dumpfile("test.vcd");
   $dumpvars(1, tb);
 end
-
-task assess_state(string name, logic [1:0] intended_state, logic [1:0] accmodule);
-  assert(accmodule == intended_state)
-  else $error("%s. %b instead of %b.", name, accmodule, intended_state);
-endtask
-
-task reset_inputs();
-  req = '0;
-  done = '0;
-endtask
-
-task request_reset_controller();
-  reset = 1;
-  reset_inputs();
-  #PERIOD reset = 0;
-endtask
-
-
-//M1 first cycle.
-task access_M1in_2p();
-  request_reset_controller();
-  req = 1 << M1;
-  #PERIOD assess_state("accss to M1 2p", 2'b01, accmodule);
-  reset_inputs();
-endtask
-
-
-//M2 first cycle.
-task access_M2in_2p();
-  request_reset_controller();
-  req = 1 << M2;
-  #PERIOD assess_state("accss to M2 2p", 2'b10, accmodule);
-  reset_inputs();
-endtask
-
-
-//M3 first cycle.
-task access_M3in_2p();
-  request_reset_controller();
-  req = 1 << M3;
-  #PERIOD assess_state("accss to M3 2p", 2'b11, accmodule);
-  reset_inputs();
-endtask
-
-
-//Interupts.
-task access_M1it_2p();
-  access_M2in_2p();
-  req = 1 << M1;
-  #PERIOD assess_state("accss to M1 interrupting M2 2p", 2'b01, accmodule);
-  reset_inputs();
-endtask
-
-
-//M1 indefinite.
-task access_M1id_2p();
-  access_M1in_2p();
-  #PERIOD assess_state("accss to M1 indefinite access 2p", 2'b01, accmodule);
-  reset_inputs();
-endtask
 endmodule
