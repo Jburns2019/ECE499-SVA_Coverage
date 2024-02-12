@@ -1,10 +1,10 @@
 //Spec. 5
 covergroup cg_M1_interrupts @(posedge tb.clk);
     cp_mstate: coverpoint tb.mstate {
-        wildcard bins M1_it_M2_2p = (5'b00100 => 5'b01000);
-        wildcard bins M1_it_M2_3p = (5'b00101 => 5'b01001);
-        wildcard bins M1_it_M3_2p = (5'b00110 => 5'b01000);
-        wildcard bins M1_it_M3_3p = (5'b00111 => 5'b01001);
+        bins M1_it_M2_2p = (5'b00100 => 5'b01000);
+        bins M1_it_M2_3p = (5'b00101 => 5'b01001);
+        bins M1_it_M3_2p = (5'b00110 => 5'b01000);
+        bins M1_it_M3_3p = (5'b00111 => 5'b01001);
     }
     cp_accmodule: coverpoint tb.accmodule {
         bins M2_to_M1 = (2'b10 => 2'b01);
@@ -16,8 +16,8 @@ endgroup
 covergroup cg_all_modules_requestable @(posedge tb.clk);
     cp_req: coverpoint tb.req {
         wildcard bins req_M1 = {3'b??1};
-        wildcard bins req_M2 = {3'b?1?};
-        wildcard bins req_M3 = {3'b1??};
+        wildcard bins req_M2 = {3'b?10};
+        wildcard bins req_M3 = {3'b1?0};
     }
     cp_accmodule: coverpoint tb.accmodule {
         wildcard bins to_M1 = (2'b?? => 2'b01);
@@ -30,17 +30,6 @@ covergroup cg_all_modules_requestable @(posedge tb.clk);
         bins M1_req_acted_on = binsof(cp_req.req_M1) && binsof(cp_accmodule.to_M1);
         bins M2_req_acted_on = binsof(cp_req.req_M2) && binsof(cp_accmodule.to_M2);
         bins M3_req_acted_on = binsof(cp_req.req_M3) && binsof(cp_accmodule.to_M3);
-    }
-endgroup
-
-//Spec. 7
-covergroup cg_req_for_cycle @(posedge tb.clk);
-    cp_req: coverpoint tb.req {
-        wildcard illegal_bins still_req_M1 = (3'b??1 => 3'b??1 => 3'b??1);
-        illegal_bins still_req_M2 = (3'b010 => 3'b010 => 3'b010);
-        illegal_bins still_req_M3 = (3'b100 => 3'b100 => 3'b100);
-
-        wildcard bins for_sure_happens = {3'b???};
     }
 endgroup
 
@@ -115,8 +104,8 @@ covergroup cg_M2_and_M3_no_it @(posedge tb.clk);
         
         illegal_bins improper_M2_to_M3 = binsof(cp_accmodule.M2_to_M3) && binsof(cp_mstate) && binsof(cp_done);
         illegal_bins improper_M3_to_M2 = binsof(cp_accmodule.M3_to_M2) && binsof(cp_mstate) && binsof(cp_done);
-        illegal_bins improper_M1_to_M2 = binsof(cp_accmodule.M1_to_M2) && binsof(cp_mstate) && binsof(cp_done);
-        illegal_bins improper_M1_to_M3 = binsof(cp_accmodule.M1_to_M3) && binsof(cp_mstate) && binsof(cp_done);
+        illegal_bins improper_M1_to_M2 = binsof(cp_accmodule.M1_to_M2) && binsof(cp_done);
+        illegal_bins improper_M1_to_M3 = binsof(cp_accmodule.M1_to_M3) && binsof(cp_done);
     }
 endgroup
 

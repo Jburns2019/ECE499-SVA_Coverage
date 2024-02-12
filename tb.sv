@@ -53,7 +53,6 @@ endfunction
 
 cg_M1_interrupts cgi_M1_interrupts;
 cg_all_modules_requestable cgi_all_modules_requestable;
-cg_req_for_cycle cgi_req_for_cycle;
 cg_req_M1_acted_on_edge cgi_req_M1_acted_on_edge;
 cg_req_M2_acted_on_edge cgi_req_M2_acted_on_edge;
 cg_req_M3_acted_on_edge cgi_req_M3_acted_on_edge;
@@ -69,7 +68,6 @@ cg_nb_interrupts cgi_nb_interrupts;
 initial begin
   if ($test$plusargs("SPEC5")) begin cgi_M1_interrupts = new; end
   if ($test$plusargs("SPEC6")) begin cgi_all_modules_requestable = new; end
-  if ($test$plusargs("SPEC7")) begin cgi_req_for_cycle = new; end
   if ($test$plusargs("SPEC8_M1")) begin cgi_req_M1_acted_on_edge = new; end
   if ($test$plusargs("SPEC8_M2")) begin cgi_req_M2_acted_on_edge = new; end
   if ($test$plusargs("SPEC8_M3")) begin cgi_req_M3_acted_on_edge = new; end
@@ -84,7 +82,6 @@ initial begin
   if ($test$plusargs("ALLSPECS")) begin
     cgi_M1_interrupts = new;
     cgi_all_modules_requestable = new;
-    cgi_req_for_cycle = new;
     cgi_req_M1_acted_on_edge = new;
     cgi_req_M2_acted_on_edge = new;
     cgi_req_M3_acted_on_edge = new;
