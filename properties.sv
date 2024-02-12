@@ -12,6 +12,7 @@ module properties(
     parameter M2 = 1;
     parameter M3 = 2;
 
+`ifdef ASSERTIONS
 //Trial assertions to get a feel for more complex assertions.
 //  Additionally they are the basis for some larger assertions, so they give a little more information.
 a_M1_it_access:
@@ -213,4 +214,5 @@ property not_both_asserted(module_num);
     @(posedge clk) disable iff(reset)
         !done[module_num] || !req[module_num]
 endproperty
+`endif
 endmodule

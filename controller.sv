@@ -54,12 +54,6 @@ module controller(
     else        ps <= ns;
   end
   
-  //When entering an interrupting state, increase the interruptions count
-  //always_ff @(posedge reset) begin
-  //  if (reset || ps[M1it_2p] || ps[M1it_3p])
-  //    nb_interrupts <= (reset) ? 0 : nb_interrupts+1;
-  //end
-  
   // Next state and output logic
   always_comb begin
     // Set outputs to initial values
@@ -70,12 +64,12 @@ module controller(
     unique case(1'b1)
       
       ps[IDLE_2p]: begin
-        unique casez(req)
+        casez(req)
           3'b??1: ns[M1in_2p] = 1'b1;
           3'b010: ns[M2in_2p] = 1'b1;
           3'b110: ns[M2in_3p] = 1'b1;
           3'b100: ns[M3in_2p] = 1'b1;
-          3'b000: ns[IDLE_2p] = 1'b1;
+          default: ns[IDLE_2p] = 1'b1;
         endcase
         mstate = 5'b00000;
         accmodule = 2'b00;
@@ -155,12 +149,12 @@ module controller(
       end
       
       ps[M1sd_2p]: begin
-        unique casez(req)
+        casez(req)
           3'b??1: ns[M1in_2p] = 1'b1;
           3'b010: ns[M2in_2p] = 1'b1;
           3'b110: ns[M2in_3p] = 1'b1;
           3'b100: ns[M3in_2p] = 1'b1;
-          3'b000: ns[IDLE_2p] = 1'b1;
+          default: ns[IDLE_2p] = 1'b1;
         endcase
         mstate = 5'b01100;
         accmodule = 2'b01;
@@ -168,12 +162,12 @@ module controller(
       
       //M2 in its second cycle of using the memory
       ps[M2sd_2p]: begin
-        unique casez(req)
+        casez(req)
           3'b??1: ns[M1in_2p] = 1'b1;
           3'b010: ns[M2in_2p] = 1'b1;
           3'b110: ns[M2in_3p] = 1'b1;
           3'b100: ns[M3in_2p] = 1'b1;
-          3'b000: ns[IDLE_2p] = 1'b1; 
+          default: ns[IDLE_2p] = 1'b1; 
         endcase
         mstate = 5'b01110;
         accmodule = 2'b10;
@@ -181,24 +175,24 @@ module controller(
       
       //M3 in its second cycle of using the memory
       ps[M3sd_2p]: begin
-        unique casez(req)
+        casez(req)
           3'b??1: ns[M1in_2p] = 1'b1;
           3'b010: ns[M2in_2p] = 1'b1;
           3'b110: ns[M2in_3p] = 1'b1;
           3'b100: ns[M3in_2p] = 1'b1;
-          3'b000: ns[IDLE_2p] = 1'b1;
+          default: ns[IDLE_2p] = 1'b1;
         endcase
         mstate = 5'b10000;
         accmodule = 2'b11;
       end
       
       ps[IDLE_3p]: begin
-        unique casez(req)
+        casez(req)
           3'b??1: ns[M1in_3p] = 1'b1;
           3'b010: ns[M2in_3p] = 1'b1;
           3'b110: ns[M3in_2p] = 1'b1;
           3'b100: ns[M3in_3p] = 1'b1;
-          3'b000: ns[IDLE_3p] = 1'b1;
+          default: ns[IDLE_3p] = 1'b1;
         endcase
         mstate = 5'b00001;
         accmodule = 2'b00;
@@ -278,48 +272,48 @@ module controller(
       end
       
       ps[M1sd_3p]: begin
-        unique casez(req)
+        casez(req)
           3'b??1: ns[M1in_3p] = 1'b1;
           3'b010: ns[M2in_3p] = 1'b1;
           3'b110: ns[M3in_2p] = 1'b1;
           3'b100: ns[M3in_3p] = 1'b1;
-          3'b000: ns[IDLE_3p] = 1'b1;
+          default: ns[IDLE_3p] = 1'b1;
         endcase
         mstate = 5'b01101;
         accmodule = 2'b01;
       end
       
       ps[M2sd_3p]: begin
-        unique casez(req)
+        casez(req)
           3'b??1: ns[M1in_3p] = 1'b1;
           3'b010: ns[M2in_3p] = 1'b1;
           3'b110: ns[M3in_2p] = 1'b1;
           3'b100: ns[M3in_3p] = 1'b1;
-          3'b000: ns[IDLE_3p] = 1'b1;
+          default: ns[IDLE_3p] = 1'b1;
         endcase
         mstate = 5'b01111;
         accmodule = 2'b10;
       end
       
       ps[M3sd_3p]: begin
-        unique casez(req)
+        casez(req)
           3'b??1: ns[M1in_3p] = 1'b1;
           3'b010: ns[M2in_3p] = 1'b1;
           3'b110: ns[M3in_2p] = 1'b1;
           3'b100: ns[M3in_3p] = 1'b1;
-          3'b000: ns[IDLE_3p] = 1'b1;
+          default: ns[IDLE_3p] = 1'b1;
         endcase
         mstate = 5'b10001;
         accmodule = 2'b11;
       end
       
       default: begin
-        unique casez(req)
+        casez(req)
           3'b??1: ns[M1in_2p] = 1'b1;
           3'b010: ns[M2in_2p] = 1'b1;
           3'b110: ns[M2in_3p] = 1'b1;
           3'b100: ns[M3in_2p] = 1'b1;
-          3'b000: ns[IDLE_2p] = 1'b1;
+          default: ns[IDLE_2p] = 1'b1;
         endcase
         mstate = 5'b00000;
         accmodule = 2'b00;
