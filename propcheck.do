@@ -2,7 +2,7 @@
 
 vlib work
 #Change controller_wrong.sv to controller.sv here and in runme.sh line 10 to see a bug free run.
-vlog -sv +define+FORMAL +define+ASSERTIONS controller.sv
+vlog -sv +define+FORMAL +define+ASSERTIONS controller_wrong.sv
 vlog -sv -mfcu -cuname sva_bind +define+ASSERTIONS properties.sv
 
 # PropCheck Section
