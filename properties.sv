@@ -11,6 +11,9 @@ module properties(
     parameter M1 = 0;
     parameter M2 = 1;
     parameter M3 = 2;
+    parameter state_M1 = 2'b01;
+    parameter state_M2 = 2'b10;
+    parameter state_M3 = 2'b11;
 
 //Trial assertions to get a feel for more complex assertions.
 //  Additionally they are the basis for some larger assertions, so they give a little more information.
@@ -18,8 +21,8 @@ a_M1_it_access:
     assert property(
         @(posedge clk) disable iff(reset)
             !accmodule && (req[M2] || req[M3])
-            |=> (accmodule == 2'b10 && !done[M2] || accmodule == 2'b11 && !done[M3]) && req[M1]
-            |=> accmodule == 2'b01
+            |=> (accmodule == state_M2 && !done[M2] || accmodule == 2'b11 && !done[M3]) && req[M1]
+            |=> accmodule == state_M1
     )
     else $error("M1 did not interrupt M2 or M3.");
 
@@ -44,7 +47,7 @@ a_M1_id_access:
         @(posedge clk) disable iff(reset)
             !req && !accmodule
             |=> req[M1]
-            |=> (accmodule == 2'b01 until done[M1])
+            |=> (accmodule == state_M1 until done[M1])
     )
     else $error("M1 did not get indefinite access.");
 
@@ -57,9 +60,9 @@ a_M1_it_2_cycle_access:
     assert property(
         @(posedge clk) disable iff(reset)
             !accmodule && (req[M2] || req[M3])
-            |=> (accmodule == 2'b10 && !done[M2] || accmodule == 2'b11 && !done[M3]) && req[M1]
-            |=> accmodule == 2'b01 && !done[M1]
-            |=> accmodule == 2'b01
+            |=> (accmodule == state_M2 && !done[M2] || accmodule == 2'b11 && !done[M3]) && req[M1]
+            |=> accmodule == state_M1 && !done[M1]
+            |=> accmodule == state_M1
     )
     else $error("Interrupting M1 had access for atleast 2 cycles.");
 //Check that there is a scenario in which M1 cannot have access for 3 cycles from an interrupt.
@@ -73,25 +76,25 @@ a_M1_no_it_3_cycle_access:
         @(posedge clk)
         disable iff(reset)
         !accmodule && (req[M2] || req[M3])
-        |=> (accmodule == 2'b10 && !done[M2] || accmodule == 2'b11 && !done[M3]) && req[M1]
-        |=> accmodule == 2'b01 && !done[M1]
-        |=> accmodule == 2'b01 && !req[M1]
-        |=> accmodule != 2'b01
+        |=> (accmodule == state_M2 && !done[M2] || accmodule == 2'b11 && !done[M3]) && req[M1]
+        |=> accmodule == state_M1 && !done[M1]
+        |=> accmodule == state_M1 && !req[M1]
+        |=> accmodule != state_M1
     )
     else $error("Interrupting M1 had access for more than 2 cycles.");
 
 //Spec. 11
 a_module_granted_M1_access_before_on_posedge: 
-    assert property(not_granted_access_before_posedge(M1, 2'b01))
+    assert property(not_granted_access_before_posedge(M1, state_M1))
     else $error("M1 got access before the clock edge.");
 a_module_granted_M1_access_on_posedge:
-    assert property(granted_access_on_posedge(3'b001, 2'b01))
+    assert property(granted_access_on_posedge(3'b001, state_M1))
     else $error("M1 did not get access when it requested.");
 a_module_granted_M2_access_before_on_posedge:
-    assert property(not_granted_access_before_posedge(M2, 2'b10))
+    assert property(not_granted_access_before_posedge(M2, state_M2))
     else $error("M2 got access before the clock edge.");
 a_module_granted_M2_access_on_posedge:
-    assert property(granted_access_on_posedge(3'b010, 2'b10))
+    assert property(granted_access_on_posedge(3'b010, state_M2))
     else $error("M2 did not get access when it requested.");
 a_module_granted_M3_access_before_on_posedge:
     assert property(not_granted_access_before_posedge(M3, 2'b11))
@@ -120,7 +123,7 @@ endproperty
 
 //Spec. 13
 a_M2_2_cycle_access:
-    assert property(two_cycle_access(M2, 2'b10))
+    assert property(two_cycle_access(M2, state_M2))
     else $error("M2 did not get 2 cycles of access when it should have.");
 a_M3_2_cycle_access:
     assert property(two_cycle_access(M3, 2'b11))
@@ -143,22 +146,22 @@ endproperty
 
 //Spec. 14  
 a_M1_smooth_M2:
-    assert property(smooth_transition(M1, M2, M3, 2'b01, 2'b10))
+    assert property(smooth_transition(M1, M2, M3, state_M1, state_M2))
     else $error("There was not a smooth transition to M2 from M1.");
 a_M1_smooth_M3: 
-    assert property(smooth_transition(M1, M3, M2, 2'b01, 2'b11))
+    assert property(smooth_transition(M1, M3, M2, state_M1, 2'b11))
     else $error("There was not a smooth transition to M3 from M1.");
 a_M2_smooth_M1:
-    assert property(smooth_transition(M2, M1, M3, 2'b10, 2'b01))
+    assert property(smooth_transition(M2, M1, M3, state_M2, state_M1))
     else $error("There was not a smooth transition to M1 from M2.");
 a_M2_smooth_M3:
-    assert property(smooth_transition(M2, M3, M1, 2'b10, 2'b11))
+    assert property(smooth_transition(M2, M3, M1, state_M2, 2'b11))
     else $error("There was not a smooth transition to M3 from M2.");
 a_M3_smooth_M1:
-    assert property(smooth_transition(M3, M1, M2, 2'b11, 2'b01))
+    assert property(smooth_transition(M3, M1, M2, 2'b11, state_M1))
     else $error("There was not a smooth transition to M1 from M3.");
 a_M3_smooth_M2:
-    assert property(smooth_transition(M3, M2, M1, 2'b11, 2'b10))
+    assert property(smooth_transition(M3, M2, M1, 2'b11, state_M2))
     else $error("There was not a smooth transition to M2 from M3.");
 
 //Check that module_num_from can transition smoothly to module_num_to.
