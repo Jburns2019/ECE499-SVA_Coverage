@@ -79,198 +79,138 @@ a_M1_no_it_3_cycle_access:
         |=> accmodule != 2'b01
     )
     else $error("Interrupting M1 had access for more than 2 cycles.");
-  
+
 //Spec. 11
-//Check that M1 cannot get access before the clock edge.
-//  If M1 does not have access and M1 requests access
-//  then M1 shouldn't get access at the end of this clock cycle.
 a_module_granted_M1_access_before_on_posedge: 
-    assert property(
-        @(posedge clk) disable iff(reset)
-            accmodule != 2'b01 && req[M1]
-            |-> ##0 accmodule != 2'b01
-    )
+    assert property(not_granted_access_before_posedge(M1, 2'b01))
     else $error("M1 got access before the clock edge.");
-//Check that M1 cannot get access before the clock edge.
-//  If M1 does not have access and M1 requests access
-//  then M1 shouldn't get access at the end of this clock cycle.
 a_module_granted_M1_access_on_posedge:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            req[M1]
-            |=> accmodule == 2'b01
-    )
+    assert property(granted_access_on_posedge(3'b001, 2'b01))
     else $error("M1 did not get access when it requested.");
-//Check that M2 cannot get access before the clock edge.
-//  If M2 does not have access and M2 requests access
-//  then M2 shouldn't get access at the end of this clock cycle.
 a_module_granted_M2_access_before_on_posedge:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            accmodule != 2'b10 && req[M2]
-            |-> ##0 accmodule != 2'b10
-    )
+    assert property(not_granted_access_before_posedge(M2, 2'b10))
     else $error("M2 got access before the clock edge.");
 a_module_granted_M2_access_on_posedge:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            !accmodule && req[M2] && !req[M1] && !req[M3]
-            |=> accmodule == 2'b10
-    )
+    assert property(granted_access_on_posedge(3'b010, 2'b10))
     else $error("M2 did not get access when it requested.");
-//Check that M3 cannot get access before the clock edge.
-//  If M3 does not have access and M3 requests access
-//  then M3 shouldn't get access at the end of this clock cycle.
 a_module_granted_M3_access_before_on_posedge:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            accmodule != 2'b11 && req[M3]
-            |-> ##0 accmodule != 2'b11
-    )
+    assert property(not_granted_access_before_posedge(M3, 2'b11))
     else $error("M3 got access before the clock edge.");
 a_module_granted_M3_access_on_posedge:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            !accmodule && req[M3] && !req[M1] && !req[M2]
-            |=> accmodule == 2'b11
-    )
+    assert property(granted_access_on_posedge(3'b100, 2'b11))
     else $error("M3 did not get access when it requested.");
-  
+
+//Check that module_num cannot get access before the clock edge.
+//  If module_num does not have access and module_num requests access
+//  then module_num shouldn't get access at the end of this clock cycle.
+property not_granted_access_before_posedge(module_num, module_state);
+    @(posedge clk) disable iff(reset)
+        accmodule != module_state && req[module_num]
+        |-> ##0 accmodule != module_state
+endproperty
+
+//Check that a module always gets access when it requests it.
+//  If only a module requests access while no other module has access
+//  then that module should get access in the next clock cycle.
+property granted_access_on_posedge(req_state, module_state);
+    @(posedge clk) disable iff(reset)
+        (!accmodule || req_state[M1]) && req == req_state
+        |=> accmodule == module_state
+endproperty
+
 //Spec. 13
 a_M2_2_cycle_access:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            !req && !accmodule
-            |=> req[M2]
-            |=> accmodule == 2'b10 && !done[M2] && !req[M1]
-            |=> accmodule == 2'b10 && !req[M2]
-            |=> accmodule != 2'b10
-    )
+    assert property(two_cycle_access(M2, 2'b10))
     else $error("M2 did not get 2 cycles of access when it should have.");
 a_M3_2_cycle_access:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            !req && !accmodule
-            |=> req[M3]
-            |=> accmodule == 2'b11 && !done[M3] && !req[M1]
-            |=> accmodule == 2'b11 && !req[M3]
-            |=> accmodule != 2'b11
-    )
+    assert property(two_cycle_access(M3, 2'b11))
     else $error("M3 did not get 2 cycles of access when it should have.");
+
+//Check that module_num can get atleast 2 cycles of access, but cannot get 3 cycles of access.
+//  If there are no requests and no modules have access
+//  followed by a cycle where module_num requests access.
+//  followed by a cycle where module_num gets access, module_num is not done, and M1 does not request access
+//  followed by a cycle where module_num gets access and module_num does not request access (instead of asserting done)
+//  then module_num should not have access on the next cycle.
+property two_cycle_access(module_num, module_state);
+    @(posedge clk) disable iff(reset)
+        !req && !accmodule
+        |=> req[module_num]
+        |=> accmodule == module_state && !done[module_num] && !req[M1]
+        |=> accmodule == module_state && !req[module_num]
+        |=> accmodule != module_state;
+endproperty
 
 //Spec. 14  
 a_M1_smooth_M2:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            req[M1]
-            |=> accmodule == 2'b01 && !done[M1] && !req[M1]
-            |=> accmodule == 2'b01 && done[M1] && !req[M3] && req[M2]
-            |=> accmodule == 2'b10
-    )
+    assert property(smooth_transition(M1, M2, M3, 2'b01, 2'b10))
     else $error("There was not a smooth transition to M2 from M1.");
 a_M1_smooth_M3: 
-    assert property(
-        @(posedge clk) disable iff(reset)
-            req[M1]
-            |=> accmodule == 2'b01 && !done[M1] && !req[M1]
-            |=> accmodule == 2'b01 && done[M1] && !req[M2] && req[M3]
-            |=> accmodule == 2'b11
-    )
+    assert property(smooth_transition(M1, M3, M2, 2'b01, 2'b11))
     else $error("There was not a smooth transition to M3 from M1.");
 a_M2_smooth_M1:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            req[M2]
-            |=> accmodule == 2'b10 && !done[M2] && !req[M2]
-            |=> accmodule == 2'b10 && done[M2] && !req[M3] && req[M1]
-            |=> accmodule == 2'b01
-    )
+    assert property(smooth_transition(M2, M1, M3, 2'b10, 2'b01))
     else $error("There was not a smooth transition to M1 from M2.");
 a_M2_smooth_M3:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            req[M2]
-            |=> accmodule == 2'b10 && !done[M2] && !req[M2]
-            |=> accmodule == 2'b10 && done[M2] && !req[M1] && req[M3]
-            |=> accmodule == 2'b11
-    )
+    assert property(smooth_transition(M2, M3, M1, 2'b10, 2'b11))
     else $error("There was not a smooth transition to M3 from M2.");
 a_M3_smooth_M1:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            req[M3]
-            |=> accmodule == 2'b11 && !done[M3] && !req[M3]
-            |=> accmodule == 2'b11 && done[M3] && !req[M2] && req[M1]
-            |=> accmodule == 2'b01
-    )
+    assert property(smooth_transition(M3, M1, M2, 2'b11, 2'b01))
     else $error("There was not a smooth transition to M1 from M3.");
 a_M3_smooth_M2:
-    assert property(
-        @(posedge clk) disable iff(reset)
-            req[M3]
-            |=> accmodule == 2'b11 && !done[M3] && !req[M3]
-            |=> accmodule == 2'b11 && done[M3] && !req[M1] && req[M2]
-            |=> accmodule == 2'b10
-    )
+    assert property(smooth_transition(M3, M2, M1, 2'b11, 2'b10))
     else $error("There was not a smooth transition to M2 from M3.");
+
+//Check that module_num_from can transition smoothly to module_num_to.
+//  If module_num_from requests
+//  followed by a cylce where module_num_from has access and module_num_from is not done
+//  followed by a cycle where module_num_from has access, module_num_from is done, no request for the other module_num, and module_num_to requests
+//  then module_num_to should get access.
+property smooth_transition(module_num_from, module_num_to, module_num_unused, module_state_from, module_state_to);
+    @(posedge clk) disable iff(reset)
+        req[module_num_from]
+        |=> accmodule == module_state_from && !done[module_num_from]
+        |=> accmodule == module_state_from && done[module_num_from] && !req[module_num_unused] && req[module_num_to]
+        |=> accmodule == module_state_to
+endproperty;
 
 //Spec. 7
 a_req_M1:
-    assume property(
-        @(posedge clk) disable iff(reset)
-            req[M1]
-            |=> !req[M1]
-    );
+    assume property(asserted_for_only_1_cycle(req, M1));
 a_req_M2:
-    assume property(
-        @(posedge clk) disable iff(reset)
-            req[M2]
-            |=> !req[M2]
-    );
+    assume property(asserted_for_only_1_cycle(req, M2));
 a_req_M3:
-    assume property(
-        @(posedge clk) disable iff(reset)
-            req[M3]
-            |=> !req[M3]
-    );
+    assume property(asserted_for_only_1_cycle(req, M3));
 
 //Sepc. 15
 a_done_M1:
-    assume property(
-        @(posedge clk) disable iff(reset)
-            done[M1]
-            |=> !done[M1]
-    );
+    assume property(asserted_for_only_1_cycle(done, M1));
 a_done_M2:
-    assume property(
-        @(posedge clk) disable iff(reset)
-            done[M2]
-            |=> !done[M2]
-    );
+    assume property(asserted_for_only_1_cycle(done, M2));
 a_done_M3:
-    assume property(
-        @(posedge clk) disable iff(reset)
-            done[M3]
-            |=> !done[M3]
-    );
+    assume property(asserted_for_only_1_cycle(done, M3));
+
+//Ensure that a signal is not raised for more than 1 cycle.
+//  If the signal for the module is asserted
+//  then the signal must be deasserted.
+property asserted_for_only_1_cycle(signal, module_num);
+    @(posedge clk) disable iff(reset)
+        signal[module_num]
+        |=> !signal[module_num]
+endproperty
 
 //Spec. 16
 a_no_req_and_done_M1:
-    assume property(
-        @(posedge clk)
-            disable iff(reset)
-            !done[M1] || !req[M1]
-    );
+    assume property(not_both_asserted(M1));
 a_no_req_and_done_M2:
-    assume property(
-        @(posedge clk)
-            disable iff(reset)
-            !done[M2] || !req[M2]
-    );
+    assume property(not_both_asserted(M2));
 a_no_req_and_done_M3:
-    assume property(
-        @(posedge clk)
-            disable iff(reset)
-            !done[M3] || !req[M3]
-    );
+    assume property(not_both_asserted(M3));
+
+//Ensure that done and req are not asserted at the same time for a module.
+//  Need to have either the done signal deasserted or the req signal deasserted. 
+property not_both_asserted(module_num);
+    @(posedge clk) disable iff(reset)
+        !done[module_num] || !req[module_num]
+endproperty
 endmodule
