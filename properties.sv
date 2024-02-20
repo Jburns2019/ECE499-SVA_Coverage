@@ -74,8 +74,7 @@ a_M1_it_2_cycle_access:
 //  Then M1 can't have access the next clock cycle.
 a_M1_no_it_3_cycle_access:
     assert property(
-        @(posedge clk)
-        disable iff(reset)
+        @(posedge clk) disable iff(reset)
         !accmodule && (req[M2] || req[M3])
         |=> (accmodule == state_M2 && !done[M2] || accmodule == 2'b11 && !done[M3]) && req[M1]
         |=> accmodule == state_M1 && !done[M1]
@@ -202,6 +201,25 @@ property asserted_for_only_1_cycle(signal, module_num);
         signal[module_num]
         |=> !signal[module_num]
 endproperty
+
+
+//Show that the assumes do not over constrain done.
+c_done_can_be_0:
+    cover property(@(posedge clk) done == '0);
+c_done_can_be_1:
+    cover property(@(posedge clk) done == 3'b001);
+c_done_can_be_2:
+    cover property(@(posedge clk) done == 3'b010);
+c_done_can_be_4:
+    cover property(@(posedge clk) done == 3'b100);
+
+//Show that the assumes do not over constrain req.
+generate
+for (genvar i = 0; i < 8; i++)
+    begin: c_req_can_be_any_val_array
+        cover property(@(posedge clk) req == i);
+    end
+endgenerate
 
 //Spec. 16
 a_no_req_and_done_M1:
