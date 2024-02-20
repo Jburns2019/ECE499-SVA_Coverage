@@ -83,15 +83,16 @@ endgroup
 //Spec. 10
 covergroup cg_M2_and_M3_no_it @(posedge tb.clk);
     cp_mstate: coverpoint tb.mstate {
-        wildcard bins mstate_any = {5'b?????};
-        wildcard ignore_bins M2_in_sec_cycle = {5'b0111?};
-        wildcard ignore_bins M3_in_sec_cycle = {5'b1000?};
+        wildcard bins state_any = (5'b????? => 5'b?????);
+        wildcard ignore_bins M1_sd = (5'b0110? => 5'b?????);
+        wildcard ignore_bins M2_in_sec_cycle = (5'b0111? => 5'b?????);
+        wildcard ignore_bins M3_in_sec_cycle = (5'b1000? => 5'b?????);
     }
     cp_done: coverpoint tb.done {
-        wildcard bins done_any = {3'b???};
-        ignore_bins done_M1 = {3'b001};
-        ignore_bins done_M2 = {3'b010};
-        ignore_bins done_M3 = {3'b100};
+        wildcard bins done_any = (3'b??? => 3'b???);
+        wildcard ignore_bins done_M1 = (3'b??1 => 3'b???);
+        wildcard ignore_bins done_M2 = (3'b?1? => 3'b???);
+        wildcard ignore_bins done_M3 = (3'b1?? => 3'b???);
     }
     cp_accmodule: coverpoint tb.accmodule {
         bins M2_to_M3 = (2'b10 => 2'b11);
@@ -104,8 +105,8 @@ covergroup cg_M2_and_M3_no_it @(posedge tb.clk);
         
         illegal_bins improper_M2_to_M3 = binsof(cp_accmodule.M2_to_M3) && binsof(cp_mstate) && binsof(cp_done);
         illegal_bins improper_M3_to_M2 = binsof(cp_accmodule.M3_to_M2) && binsof(cp_mstate) && binsof(cp_done);
-        illegal_bins improper_M1_to_M2 = binsof(cp_accmodule.M1_to_M2) && binsof(cp_done);
-        illegal_bins improper_M1_to_M3 = binsof(cp_accmodule.M1_to_M3) && binsof(cp_done);
+        illegal_bins improper_M1_to_M2 = binsof(cp_accmodule.M1_to_M2) && binsof(cp_mstate) && binsof(cp_done);
+        illegal_bins improper_M1_to_M3 = binsof(cp_accmodule.M1_to_M3) && binsof(cp_mstate) && binsof(cp_done);
     }
 endgroup
 
