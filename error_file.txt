@@ -1,0 +1,74 @@
+# 
+# Questa Static Verification System
+# Version 2021.2 4611599 linux_x86_64 19-Apr-2021
+
+# 
+# Copyright 1995-2021 Mentor Graphics Corporation.
+# All Rights Reserved.
+# 
+# THIS WORK CONTAINS TRADE SECRET AND PROPRIETARY INFORMATION 
+# WHICH IS THE PROPERTY OF MENTOR GRAPHICS CORPORATION OR ITS
+# LICENSORS AND IS SUBJECT TO LICENSE TERMS.
+# 
+# THIS DOCUMENT CONTAINS TRADE SECRETS AND COMMERCIAL OR FINANCIAL
+# INFORMATION THAT ARE PRIVILEGED, CONFIDENTIAL, AND EXEMPT FROM
+# DISCLOSURE UNDER THE FREEDOM OF INFORMATION ACT, 5 U.S.C. SECTION
+# 552.  FURTHERMORE, THIS INFORMATION IS PROHIBITED FROM DISCLOSURE
+# UNDER THE TRADE SECRETS ACT, 18 U.S.C. SECTION 1905.
+# 
+# do propcheck.do
+# QuestaSim-64 vlog 2021.2 Compiler 2021.04 Apr 14 2021
+# Start time: 15:18:26 on Feb 14,2024
+# vlog -sv "+define+FORMAL" "+define+ASSERTIONS" controller_wrong.sv 
+# -- Compiling module properties
+# -- Compiling module controller
+# 
+# Top level modules:
+# 	controller
+# End time: 15:18:26 on Feb 14,2024, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# QuestaSim-64 vlog 2021.2 Compiler 2021.04 Apr 14 2021
+# Start time: 15:18:26 on Feb 14,2024
+# vlog -sv -mfcu -cuname sva_bind "+define+ASSERTIONS" properties.sv 
+# -- Compiling module properties
+# 
+# Top level modules:
+# 	properties
+# End time: 15:18:26 on Feb 14,2024, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# 
+# Questa Static Verification System
+# Version 2021.2 4611599 linux_x86_64 19-Apr-2021
+# 
+# 
+# log created Wed Feb 14 15:18:27 2024 by burnsjo on flip3.engr.oregonstate.edu
+# 
+# 
+# Command: netlist elaborate
+# Command arguments:
+#     -zdb
+#       /nfs/stak/users/burnsjo/Documents/ECE499/Week5/log/propcheck.db/DB/zdb_0
+#     -tool propcheck
+#     -d controller
+#     -cuname sva_bind
+# 
+# 
+## Elaborating Design...
+# LICENSE: ERROR: Transaction request failed 
+# //  License request for znsynthnl feature failed
+# FLEX ERROR: -15, feature: znsynthnl, checkout none, server: 2717@linlic.engr.oregonstate.edu
+# , reason: Cannot connect to license server system.
+# Fatal   : License checkout failed.  License 'znsynthnl'.  [system-41]
+#         : Processing will abort.
+# 
+# Message Summary
+# ---------------------------------------------------------------------------
+# Count  Type     Message ID         Summary
+# ---------------------------------------------------------------------------
+#     1  Fatal    system-41          License checkout failed.
+# 
+# Summary: 1 Fatals, 0 Errors, 0 Warnings in processing "netlist elaborate"
+# End of log Wed Feb 14 15:18:27 2024
+# 
+# 
+# Error   : Error encountered executing Tcl command.  Command: formal compile, File: /nfs/stak/users/burnsjo/Documents/ECE499/Week5/propcheck.do, Line: 16.  [cli-7]
