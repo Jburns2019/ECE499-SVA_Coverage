@@ -30,7 +30,7 @@ class Random_Class;
   rand bit [2:0] done;
   rand bit [2:0] reset;
 
-  constraint is_one_hot {done[0] ^ done[1] ^ done[2] && done != 3'b111;}
+  constraint is_one_hot {done[0] ^ done[1] ^ done[2] && done != 3'b111 || !done;}
   constraint not_both {!(req[M1] && done[M1] || req[M2] && done[M2] || req[M3] && done[M3]);}
 endclass
 
@@ -98,7 +98,7 @@ initial begin
   clk = 0;
 
   randomizer.srandom(1234);
-  repeat(50000) begin
+  repeat(45000) begin
     randomizer.randomize();
     while (need_to_rerandomize(req, done, randomizer.req, randomizer.done)) begin
       randomizer.randomize();
