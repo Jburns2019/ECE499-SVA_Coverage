@@ -11,3 +11,21 @@ vlog +define+ASSERTIONS controller.sv tb.sv covergroups.sv +fcover -cover sbcef 
 
 #Simulate states.
 vsim tb -c -coverage -do cover.do +ALLSPECS
+echo ""
+echo ""
+echo "Finished simulating."
+
+if [[ $(hostname) == *"babylon"* ]]; then
+    echo "As you are on the babylon server jaspergold is being launched."
+    echo "Within jasper gold, use the command 'include run_controller.tcl' to prove properties."
+    echo ""
+
+    jg #include run_controller.tcl
+elif [[ $(hostname) == *"flip"* ]]; then
+    sh fpv.sh
+
+    echo ""
+    echo ""
+    echo "You were not on the babylon server. Attempted to launch the qverify fpv tool."
+    echo ""
+fi

@@ -5,6 +5,8 @@ clock clk -factor 1 -phase 1
 reset -analyze -synchronous -list signal -silent
 reset -expression {reset}
 
+#Trial assertions to get a feel for more complex assertions.
+#  Additionally they are the basis for some larger assertions, so they give a little more information.
 assert -name a_M1_it_access {
     @(posedge clk) disable iff(reset)
         !accmodule && (req[1] || req[2])
@@ -12,6 +14,8 @@ assert -name a_M1_it_access {
         |=> accmodule == 2'b01
 };
 
+#Spec. 4
+#Reset should remove module access as soon as its asserted.
 assert -name a_reset {
     @(posedge clk)
         reset
@@ -19,6 +23,11 @@ assert -name a_reset {
         |-> !accmodule
 };
 
+#Spec. 9
+#Check that if there is a scenario in which M1 should have indefinite access it always has indefinite access.
+#  If there are no requests and no module access
+#  followed by a cycle with a reqest for M1.
+#  The M1 module should have access from the next clock cycle until it is done.
 assert -name a_M1_id_access {
     @(posedge clk) disable iff(reset)
         !req && !accmodule
@@ -26,6 +35,11 @@ assert -name a_M1_id_access {
         |=> (accmodule == 2'b01 until done[0])
 };
 
+#Check that there is a scenario in which M1 should have access for 2 cycles it always has access for 2 cycles.
+#  If no module has access
+#  followed by a cycle with M2 or M3 having access, M1 requesting access, and no done signals
+#  followed by a cycle with M1 having access and not being done with it
+#  Then M1 should hve access on the next clock cycle.
 assert -name a_M1_it_2_cycle_access {
     @(posedge clk) disable iff(reset)
         !accmodule && (req[1] || req[2])
@@ -33,7 +47,12 @@ assert -name a_M1_it_2_cycle_access {
         |=> accmodule == 2'b01 && !done[0]
         |=> accmodule == 2'b01
 };
-
+#Check that there is a scenario in which M1 cannot have access for 3 cycles from an interrupt.
+#  If no module has access
+#  followed by a cycle with M2 or M3 having access, M1 requesting access, and no done signals
+#  followed by a cycle with M1 having access and not being done with it
+#  followed by a cycle with M1 having access and not requesting M1 access
+#  Then M1 can't have access the next clock cycle.
 assert -name a_M1_no_it_3_cycle_access {
     @(posedge clk) disable iff(reset)
         !accmodule && (req[M2] || req[M3])
@@ -43,6 +62,10 @@ assert -name a_M1_no_it_3_cycle_access {
         |=> accmodule != 2'b01
 };
 
+#Spec. 11
+#Check that module_num cannot get access before the clock edge.
+#  If module_num does not have access and module_num requests access
+#  then module_num shouldn't get access at the end of this clock cycle.
 assert -name a_module_granted_M1_access_before_on_posedge {
     @(posedge clk) disable iff(reset)
         accmodule != 2'b01 && req[0]
@@ -59,6 +82,9 @@ assert -name a_module_granted_M3_access_before_on_posedge {
         |-> ##0 accmodule != 2'b11
 };
 
+#Check that a module always gets access when it requests it.
+#  If only a module requests access while no other module has access
+#  then that module should get access in the next clock cycle.
 assert -name a_module_granted_M1_access_on_posedge {
     @(posedge clk) disable iff(reset)
         req == 3'b001
@@ -75,6 +101,13 @@ assert -name a_module_granted_M3_access_on_posedge {
         |=> accmodule == 2'b11
 };
 
+#Spec. 13
+#Check that module_num can get atleast 2 cycles of access, but cannot get 3 cycles of access.
+#  If there are no requests and no modules have access
+#  followed by a cycle where module_num requests access.
+#  followed by a cycle where module_num gets access, module_num is not done, and M1 does not request access
+#  followed by a cycle where module_num gets access and module_num does not request access (instead of asserting done)
+#  then module_num should not have access on the next cycle.
 assert -name a_M2_2_cycle_access {
     @(posedge clk) disable iff(reset)
         !req && !accmodule
@@ -92,6 +125,12 @@ assert -name a_M3_2_cycle_access {
         |=> accmodule != 2'b11
 };
 
+#Spec. 14
+#Check that module_num_from can transition smoothly to module_num_to.
+#  If module_num_from requests
+#  followed by a cylce where module_num_from has access and module_num_from is not done
+#  followed by a cycle where module_num_from has access, module_num_from is done, no request for the other module_num, and module_num_to requests
+#  then module_num_to should get access.
 assert -name a_M1_smooth_M2 {
     @(posedge clk) disable iff(reset)
         req[0]
@@ -135,6 +174,10 @@ assert -name a_M3_smooth_M2 {
         |=> accmodule == 2'b10
 };
 
+#Spec. 7
+#Ensure that req is not raised for more than 1 cycle.
+#  If the req for the module is asserted
+#  then the req must be deasserted.
 assume -name a_req_M1 -env {
     @(posedge clk) disable iff(reset)
         req[0]
@@ -151,6 +194,10 @@ assume -name a_req_M3 -env {
         |=> !req[2]
 }
 
+#Sepc. 15
+#Ensure that a done is not raised for more than 1 cycle.
+#  If the done for the module is asserted
+#  then the done must be deasserted.
 assume -name a_done_M1 -env {
     @(posedge clk) disable iff(reset)
         done[0]
@@ -167,6 +214,7 @@ assume -name a_done_M3 -env {
         |=> !done[2]
 }
 
+#Show that the assumes do not over constrain done.
 cover -name c_done_can_be_0 {
     @(posedge clk) done == '0
 }
@@ -180,6 +228,7 @@ cover -name c_done_can_be_4 {
     @(posedge clk) done == 3'b100
 }
 
+#Show that the assumes do not over constrain req.
 cover -name c_req_can_be_0 {
     @(posedge clk) req == 3'b000
 }
@@ -205,6 +254,9 @@ cover -name c_req_can_be_7 {
     @(posedge clk) req == 3'b111
 }
 
+#Spec. 16
+#Ensure that done and req are not asserted at the same time for a module.
+#  Need to have either the done signal deasserted or the req signal deasserted. 
 assume -name a_no_req_and_done_M1 -env {
     @(posedge clk) disable iff(reset)
         !done[0] || !req[0]
@@ -217,3 +269,5 @@ assume -name a_no_req_and_done_M3 -env {
     @(posedge clk) disable iff(reset)
         !done[2] || !req[2]
 }
+
+prove -all
