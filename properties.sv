@@ -22,7 +22,7 @@ a_M1_it_access:
     assert property(
         @(posedge clk) disable iff(reset)
             !accmodule && (req[M2] || req[M3])
-            |=> (accmodule == state_M2 && !done[M2] || accmodule == 2'b11 && !done[M3]) && req[M1]
+            |=> (accmodule == state_M2 && !done[M2] || accmodule == state_M3 && !done[M3]) && req[M1]
             |=> accmodule == state_M1
     )
     else $error("M1 did not interrupt M2 or M3.");
@@ -75,11 +75,11 @@ a_M1_it_2_cycle_access:
 a_M1_no_it_3_cycle_access:
     assert property(
         @(posedge clk) disable iff(reset)
-        !accmodule && (req[M2] || req[M3])
-        |=> (accmodule == state_M2 && !done[M2] || accmodule == 2'b11 && !done[M3]) && req[M1]
-        |=> accmodule == state_M1 && !done[M1]
-        |=> accmodule == state_M1 && !req[M1]
-        |=> accmodule != state_M1
+            !accmodule && (req[M2] || req[M3])
+            |=> (accmodule == state_M2 && !done[M2] || accmodule == 2'b11 && !done[M3]) && req[M1]
+            |=> accmodule == state_M1 && !done[M1]
+            |=> accmodule == state_M1 && !req[M1]
+            |=> accmodule != state_M1
     )
     else $error("Interrupting M1 had access for more than 2 cycles.");
 
