@@ -15,7 +15,6 @@ module properties(
     parameter state_M2 = 2'b10;
     parameter state_M3 = 2'b11;
 
-`ifdef ASSERTIONS
 //Trial assertions to get a feel for more complex assertions.
 //  Additionally they are the basis for some larger assertions, so they give a little more information.
 a_M1_it_access:
@@ -27,6 +26,7 @@ a_M1_it_access:
     )
     else $error("M1 did not interrupt M2 or M3.");
 
+`ifdef ASSERTIONS
 //Spec. 4
 //Reset should remove module access as soon as its asserted.
 a_reset:
@@ -48,9 +48,10 @@ a_M1_id_access:
         @(posedge clk) disable iff(reset)
             !req && !accmodule
             |=> req[M1]
-            |=> (accmodule == state_M1 until done[M1])
+            |=> accmodule == state_M1 until done[M1]
     )
     else $error("M1 did not get indefinite access.");
+`endif
 
 //Check that there is a scenario in which M1 should have access for 2 cycles it always has access for 2 cycles.
 //  If no module has access
@@ -109,7 +110,7 @@ a_module_granted_M3_access_on_posedge:
 property not_granted_access_before_posedge(module_num, module_state);
     @(posedge clk) disable iff(reset)
         accmodule != module_state && req[module_num]
-        |-> ##0 accmodule != module_state
+        |-> ##0 accmodule != module_state;
 endproperty
 
 //Check that a module always gets access when it requests it.
@@ -118,7 +119,7 @@ endproperty
 property granted_access_on_posedge(req_state, module_state);
     @(posedge clk) disable iff(reset)
         (!accmodule || req_state[M1]) && req == req_state
-        |=> accmodule == module_state
+        |=> accmodule == module_state;
 endproperty
 
 //Spec. 13
@@ -174,7 +175,7 @@ property smooth_transition(module_num_from, module_num_to, module_num_unused, mo
         req[module_num_from]
         |=> accmodule == module_state_from && !done[module_num_from]
         |=> accmodule == module_state_from && done[module_num_from] && !req[module_num_unused] && req[module_num_to]
-        |=> accmodule == module_state_to
+        |=> accmodule == module_state_to;
 endproperty;
 
 //Spec. 7
@@ -199,7 +200,7 @@ a_done_M3:
 property asserted_for_only_1_cycle(signal, module_num);
     @(posedge clk) disable iff(reset)
         signal[module_num]
-        |=> !signal[module_num]
+        |=> !signal[module_num];
 endproperty
 
 
@@ -233,7 +234,6 @@ a_no_req_and_done_M3:
 //  Need to have either the done signal deasserted or the req signal deasserted. 
 property not_both_asserted(module_num);
     @(posedge clk) disable iff(reset)
-        !done[module_num] || !req[module_num]
+        !done[module_num] || !req[module_num];
 endproperty
-`endif
 endmodule
