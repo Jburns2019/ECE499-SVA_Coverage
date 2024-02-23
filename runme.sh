@@ -22,10 +22,10 @@ if [[ $(hostname) == *"babylon"* ]]; then
 
     jg #include run_controller.tcl
 elif [[ $(hostname) == *"flip"* ]]; then
-    sh fpv.sh
+    #sh fpv.sh
 
     echo ""
     echo ""
-    echo "You were not on the babylon server. Attempted to launch the qverify fpv tool."
+    echo "You were not on the babylon server."
     echo ""
 fi
