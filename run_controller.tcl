@@ -2,17 +2,8 @@ clear -all
 analyze -sv controller.sv
 elaborate -top controller
 clock clk -factor 1 -phase 1
-reset -analyze -synchronous -list signal -silent
-reset -expression {reset}
-
-#Spec. 4
-#Reset should remove module access as soon as its asserted.
-assert -name a_reset {
-    @(posedge clk)
-        reset
-        |-> $past(accmodule)
-        |-> !accmodule
-};
+#Allow reset to change.
+reset -none
 
 #Spec. 9
 #Check that if there is a scenario in which M1 should have indefinite access it always has indefinite access.
