@@ -104,6 +104,21 @@ property granted_access_on_posedge(req_state, module_state);
         |=> accmodule == module_state;
 endproperty
 
+`ifdef ASSERTIONS
+//Spec. 12
+a_oscillating_tie_breaker:
+    assert property(
+        @(posedge clk) disable iff(reset)
+            req == 3'b110 && !accmodule
+            |=> accmodule == state_M2
+            |=> accmodule == state_M2 && done[M2]
+            until req == 3'b110
+            |=> accmodule == state_M3 && !done[M3] && !req[M1]
+            |=> accmodule == state_M3
+    )
+    else $error("The oscilating tie breaker went wrong.");
+`endif
+
 //Spec. 13
 a_M2_2_cycle_access:
     assert property(two_cycle_access(M2, state_M2))
